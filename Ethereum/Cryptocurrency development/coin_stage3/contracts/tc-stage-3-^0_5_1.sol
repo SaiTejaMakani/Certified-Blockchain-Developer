@@ -138,9 +138,23 @@ contract TCoinAdvanced is admined, TCoin {
         balanceOf[msg.sender] -= amount;
         require(msg.sender.send(amount * sellPrice * 1 ether));
     }
+    
+    function giveBlockReward() public{
+        balanceOf[block.coinbase] += 1;
+    }
+    
+    bytes32 public currentChallange;
+    uint public timeOfLastProof;
+    uint public difficulty = 10**32;
+    
+    function proofOfWork(uint nonce) public{
+        bytes32 n = sha256(abi.encodePacked(nonce, currentChallange));
+        require(n > bytes32(difficulty));
+        uint timeSinceLastBlock = (now - timeOfLastProof);
+        require(timeSinceLastBlock > 5 seconds);
+        balanceOf[msg.sender] += timeSinceLastBlock/ 60 seconds;
+        difficulty = difficulty * 10 minutes / timeOfLastProof + 1;
+        timeOfLastProof = now;
+        currentChallange = sha256(abi.encodePacked(nonce, currentChallange, blockhash(block.number-1)));
+    }  
 }
-
-
-
-
-
